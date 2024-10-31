@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "Please run as a root user or using sudo"
+  exit 1
+fi
+# this checks if the script is being run by the root user or using sudo
+# EUID is the Effective User ID and it can be used if the user is executing with root privileges
+# the script outputs the message to the standard error stream using 1>&2 if not a super user
+# source: https://www.baeldung.com/linux/check-script-run-root#:~:text=root%20Check%20With%20the%20id%20Command&text=To%20do%20that%2C%20it%20uses,not%20the%20real%20user%20ID.
+
+if [[ "$#" -eq 0 ]]; then 
+	echo "Please enter an option for the script"
+  exit 1
+fi
+# checks if any arguments or options are being passed into the script when called and exits if none
+
+while getopts ":cp:" opt; do
+  case "${opt}" in 
+    p)
+      user_list=${OPTARG}
+      IFS=" " read -r -a packages <<< "$user_list"
+      # 
+      # source: https://github.com/koalaman/shellcheck/wiki/SC2206
+      # source: https://man.archlinux.org/man/read.1p
+      # echo ${packages[@]}
+      
+      ./configuration_script_packages "${packages[@]}"
+      # calls on our other script to handle the package installation with the user created package array
+      # source: https://unix.stackexchange.com/questions/717483/creating-a-bash-script-to-install-packages
+
+      exit 0
+      ;;
+
+    c)
+      
+      ;;
+
+    :)
+      echo "Error: -${OPTARG} requires an argument for packages to install"
+      exit 2
+      ;;
+    *)
+      echo "Please enter a valid option"
+      exit 2
+      ;;
+  esac
+done
+
+
