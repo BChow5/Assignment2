@@ -5,11 +5,13 @@
 ### configuration_script_main
 This script is for the setup of a new system by automatically installing selected packages and organizing configuration files. It installs the packages specified by the user in the *packages* text file and creates symbolic links to the cloned directory. This script requires you to run it as the root user or using sudo.
 
-**How to Call The Script to Download Packages**
+**How to Call The Script to Download Packages** <br>
 *e.g. "sudo ./configuration_script_main -p package"*
+<br>
 
-**How to Call The Script to Set Configuration Symbolic Links**
+**How to Call The Script to Set Configuration Symbolic Links** <br>
 *e.g. "sudo ./configuration_script_main -c"*
+<br>
 
 **How to Set Custom Packages to Download:**
 Edit the text in the *packages* file to specify which packages you want downloded onto the system automatically. Separate each package on it's own new line.
