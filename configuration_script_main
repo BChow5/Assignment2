@@ -18,14 +18,11 @@ fi
 while getopts ":cp:" opt; do
   case "${opt}" in 
     p)
-      user_list=${OPTARG}
-      IFS=" " read -r -a packages <<< "$user_list"
-      # 
-      # source: https://github.com/koalaman/shellcheck/wiki/SC2206
-      # source: https://man.archlinux.org/man/read.1p
+      packages=$(<${OPTARG})
+      # saves the contents of the file provided by the user argument into the variable packages using command substitution
       # echo ${packages[@]}
-      
-      ./configuration_script_packages "${packages[@]}"
+      # source: https://stackoverflow.com/questions/14116748/need-to-assign-the-contents-of-a-text-file-to-a-variable-in-a-bash-script
+      bash configuration_script_packages ${packages}
       # calls on our other script to handle the package installation with the user created package array
       # source: https://unix.stackexchange.com/questions/717483/creating-a-bash-script-to-install-packages
 
@@ -33,16 +30,19 @@ while getopts ":cp:" opt; do
       ;;
 
     c)
-      
+      bash configuration_script_config
+      # calls the script to create symbolic links for the configuration files based to the cloned configuration directory
       ;;
 
     :)
       echo "Error: -${OPTARG} requires an argument for packages to install"
       exit 2
+      # error for when a user puts in the option -p but has no argument with it
       ;;
     *)
-      echo "Please enter a valid option"
+      echo "Error: Please enter a valid option"
       exit 2
+      # error for when a user give an option other than -p or -c
       ;;
   esac
 done
