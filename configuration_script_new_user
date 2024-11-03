@@ -1,0 +1,90 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "Please run as a root user or using sudo"
+  exit 1
+fi
+# checks if script is being run with sudo or as root user. exit if not.
+
+shell="/bin/bash"
+password="BCIT123"
+new_user=0
+base_uid=1000
+
+user_exists() {
+    if grep -q -e "^$1:" /etc/passwd; then
+        echo "That user already exists"
+        exit 3 # Exit because user already exists
+    fi
+}
+
+check_uid() {
+  while [[ $new_user -eq 0 ]]; do
+    if grep -q -e ":$base_uid:" /etc/passwd || grep -e ":$base_uid:" /etc/group; then
+      # checks if base_uid is already used in /etc/passwd
+      base_uid=$(( base_uid + 1 ))
+      # if it is there, then add 1 to the uid and try again to check
+      echo $base_uid
+    else
+      new_user=1
+      # sets to 1 to exit out of the loop after
+      base_gid=$base_uid
+      
+      echo "Available UID is: $base_uid"
+    fi
+    # checks in /etc/passwd if the UID already exists in the file
+    # if UID already exists, then increment by 1 and check again
+    # if there is no matching UID, then change new_user to 1 to exit the while loop
+    # source: https://man.archlinux.org/man/grep.1
+  done
+}
+
+add_user() {
+  home_dir="/home/$user"
+  echo "$user:x:$base_uid:$base_gid:$user:$home_dir:$shell" >> /etc/passwd
+  # appends the new user information into the /etc/passwd file
+  # source: https://stackoverflow.com/questions/7859281/how-to-add-user-with-out-using-useradd-or-similar-command
+  echo "Creating your new user"
+  # appendss info of a new user to the /etc/passwd file to create the new user
+  mkdir /home/$user
+  # creates the home directory of the new user
+  chmod 744 /home/$user
+  # changing permission for the new home directory for the user. giving read,write execute for owner, read for group and others
+  cp -pr /etc/skel /home/$user
+  # source: https://man.archlinux.org/man/cp.1
+  # source: https://superuser.com/questions/61611/how-to-copy-with-cp-to-include-hidden-files-and-hidden-directories-and-their-con
+  echo "$user:x:$base_gid:$user" >> /etc/group
+
+} 
+
+
+while getopts ":ds:u:" opt; do
+  case "${opt}" in
+    u)
+      user_exists
+      # checks if the desired user exists
+      user=${OPTARG}
+      # allows input for name of user to be created
+      check_uid
+      # calls function to check which UID is available for the user
+      echo "Creating the user $user with UID $base_uid"
+      add_user
+      ;;
+    s)
+      shell=/bin/${OPTARG}
+      ;;
+
+    :)
+      echo "Error: -${OPTARG} requires an argument for packages to install"
+      exit 2
+      # error for when a user puts an option but has no argument with it when it needs one
+      ;;
+    *)
+      echo "Error: Please enter a valid option"
+      exit 2
+      # error for when a user give an option other than -d or -u
+  esac
+done
+
+
+

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pacman -Syu
+
 for package in "$@"; do
   pacman -S --noconfirm "$package"
 done 
