@@ -1,7 +1,5 @@
 # Assignment 2 Instructions
 
-## Scripts You Can Run:
-
 ### configuration_script_main
 This script is for the setup of a new system by automatically installing selected packages and organizing configuration files. It installs the packages specified by the user in the *packages* text file and creates symbolic links to the cloned directory. This script requires you to run it as the root user or using sudo.
 
@@ -23,5 +21,5 @@ Edit the text in the *packages* file to specify which packages you want downlode
 This script creates a new user on a computer and allows you to customize the username, shell, add the new user to groups and automatically sets up a home directory. It copies default configuration files from `/etc/skel` into the new home directory and assigns the new user to a primary group that matches their username. This script requires you to run it as the root user or using sudo. 
 <br>
 
-#### Customization Files
+### Customization Files
 * package - allows user to customize which packages should be installed
