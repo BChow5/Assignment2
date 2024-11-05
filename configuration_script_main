@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [[ $EUID -ne 0 ]]; then
   echo "Please run as a root user or using sudo"
   exit 1
@@ -30,14 +31,19 @@ while getopts ":cp:" opt; do
       ;;
 
     c)
-      bash configuration_script_config
+      user_home=$(eval echo ~${SUDO_USER})
+      # source: https://stackoverflow.com/questions/7358611/get-users-home-directory-when-they-run-a-script-as-root
+      bash configuration_script_config ${user_home}
       # calls the script to create symbolic links for the configuration files based to the cloned configuration directory
       ;;
 
     :)
-      echo "Error: -${OPTARG} requires an argument for packages to install"
-      exit 2
+      if [[ ${OPTARG} == "p" ]];then
+        echo "Error: -${OPTARG} requires an argument for packages to install"
+        exit 2
+      fi
       # error for when a user puts in the option -p but has no argument with it
+      
       ;;
     *)
       echo "Error: Please enter a valid option"

@@ -79,20 +79,18 @@ add_group() {
 
     group_line=$(grep "^$group:" /etc/group)
     # finds the group in the /etc/group file and saves the text line to variable
-    echo $group_line
     if [[ $group_line =~ :$ ]]; then
       # checks if the last character is a : using a regex to check if there are any users already in the group
       # source: https://stackoverflow.com/questions/21425006/how-to-check-if-the-last-string-character-equals-in-bash
       modified_group="${group_line}${user}"
-      echo $modified_group
       # adds the user to the end of the line
     else
       modified_group="${group_line},${user}"
-      echo $modified_group
       # adds user to the end of the line but adds a comma if a user is already in the group
       # creates a modified new line adding the new user to the group
     fi
     sed -i "s|$group_line|$modified_group|g" /etc/group
+    # replaces the old text saved in $group_line with the new text saved in $modified_group
     # source: https://askubuntu.com/questions/20414/find-and-replace-text-within-a-file-using-commands
     # source: https://man.archlinux.org/man/sed.1
   done
@@ -103,13 +101,16 @@ while getopts ":g:s:u:" opt; do
   case "${opt}" in
     u)
       user=${OPTARG}
+      # sets the user based on the user input
       ;;
     s)
       shell=/bin/${OPTARG}
+      # sets the desired shell based on user unput
       ;;
 
     g) 
       read -a group_add <<< ${OPTARG}
+      # gets a string of the group to add user to and save it to an array group_add
       ;;
     :)
       if [[ "${OPTARG}" == "u" ]]; then  
@@ -119,7 +120,7 @@ while getopts ":g:s:u:" opt; do
         echo "Error: -${OPTARG} requires a custom shell"
         exit 2
       elif [[ "${OPTARG}" == "g" ]]; then
-        echo "Error: -${OPTARG} requires groups to add the user to"
+        echo "Error: -${OPTARG} requires at least one group to add the user to"
         exit 2
       fi
       # error for when a user puts an option but has no argument with it when it needs one
@@ -148,3 +149,5 @@ if [[ -n $group_add ]]; then
   add_group
   echo "Adding the new user to the specified groups"
 fi
+
+passwd $user

@@ -1,11 +1,16 @@
 #!/bin/bash
-if [[ -d "$HOME/.bashrc" ]]; then
+
+user_home=$1
+# saving the argument passed into the script as a variable
+
+if [[ -d "$user_home/.bashrc" ]]; then
   # checks if the .bashrc already exists
-  rm $HOME/.bashrc
+  rm $user_home/.bashrc
+  # removes the file if it already exists because we're going to create a new one
 fi
 
-ln -s $HOME/copy_config/bin $HOME/bin
-ln -s $HOME/copy_config/config $HOME/.config
-ln -s $HOME/copy_config/home/bashrc $HOME/.bashrc
+ln -s $user_home/copy_config/bin $user_home/bin
+ln -s $user_home/copy_config/config $user_home/.config
+ln -s $user_home/copy_config/home/bashrc $user_home/.bashrc
 
 # creating symbolic links from our cloned configuration files to our files on the PC for the new user
