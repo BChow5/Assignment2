@@ -6,28 +6,29 @@
 * Sudo access
 
 
-### configuration_script_main
+### Script 1: configuration_script_main
 This script is for the setup of a new system by automatically installing selected packages and organizing configuration files. It installs the packages specified by the user in the *packages* text file and creates symbolic links to the cloned directory. **This script requires you to run it as the root user or using sudo.**
 <br>
+
 **How to Call The Script to Download Packages** <br>
 - Use the "-p" option and provide the name of the package text file that contains a list of packages for download.
 * *e.g. "sudo ./configuration_script_main -p package"*
 <br>
 
 **How to Call The Script to Set Configuration Symbolic Links** <br>
-* Use the "-c" option when calling the script.
-* *e.g. "sudo ./configuration_script_main -c"*
+* Use the "-c" option and provide the name for a single user to create the symbolic links for.
+* *e.g. "sudo ./configuration_script_main -c user"*
 <br>
 
 **How to Set Custom Packages to Download:**
-Edit the text in the *packages* file to specify which packages you want downloded onto the system automatically. Separate each package on it's own new line.
+* Edit the text in the *packages* file to specify which packages you want downloded onto the system automatically. Separate each package on it's own new line.
 <br>
 ###### NOTE: There are already default packages listed in the file for download
 <br>
 
 ---
 
-### configuration_script_new_user
+### Script 2: configuration_script_new_user
 This script creates a new user on a computer and allows you to customize the username, shell, add the new user to existing groups, sets a password, and automatically sets up a home directory. It copies default configuration files from `/etc/skel` into the new home directory and assigns the new user to a primary group that matches their username. **This script requires you to run it as the root user or using sudo.**
 
 ###### NOTE: A user name must always be provided with the "-u" option to run this script

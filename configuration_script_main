@@ -2,7 +2,7 @@
 
 
 if [[ $EUID -ne 0 ]]; then
-  echo "Please run as a root user or using sudo"
+  echo "Error: Please run as a root user or using sudo"
   exit 1
 fi
 # this checks if the script is being run by the root user or using sudo
@@ -10,8 +10,8 @@ fi
 # the script outputs the message to the standard error stream using 1>&2 if not a super user
 # source: https://www.baeldung.com/linux/check-script-run-root#:~:text=root%20Check%20With%20the%20id%20Command&text=To%20do%20that%2C%20it%20uses,not%20the%20real%20user%20ID.
 
-if [[ "$#" -eq 0 ]]; then 
-	echo "Please enter an option for the script"
+if [[ $# -eq 0 ]]; then 
+	echo "Error: Please enter an option for the script"
   exit 1
 fi
 # checks if any arguments or options are being passed into the script when called and exits if none
@@ -31,7 +31,7 @@ while getopts ":cp:" opt; do
       ;;
 
     c)
-      user_home=$(eval echo ~${SUDO_USER})
+      user_home=${OPTARG}
       # source: https://stackoverflow.com/questions/7358611/get-users-home-directory-when-they-run-a-script-as-root
       bash configuration_script_config ${user_home}
       # calls the script to create symbolic links for the configuration files based to the cloned configuration directory
@@ -39,7 +39,7 @@ while getopts ":cp:" opt; do
 
     :)
       if [[ ${OPTARG} == "p" ]];then
-        echo "Error: -${OPTARG} requires an argument for packages to install"
+        echo "Error: -${OPTARG} requires a textfile name containing packages to install"
         exit 2
       fi
       # error for when a user puts in the option -p but has no argument with it

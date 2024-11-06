@@ -50,16 +50,23 @@ add_user() {
   echo "$user:x:$base_uid:$base_gid:$user:$home_dir:$shell" >> /etc/passwd
   # appends the new user information into the /etc/passwd file
   # source: https://stackoverflow.com/questions/7859281/how-to-add-user-with-out-using-useradd-or-similar-command
+  echo "$user:x:$base_gid:$user" >> /etc/group
+  # adding the user to their default group with the same name as the username
+}
+
+make_directory() {
   mkdir /home/$user
   # creates the home directory of the new user
   chown -R "$user:" "$home_dir"
   # changing ownership of the home directory to the new user created 
+}
+
+copy_skel() {
+
   cp -pr /etc/skel /home/$user
   # source: https://man.archlinux.org/man/cp.1
   # source: https://superuser.com/questions/61611/how-to-copy-with-cp-to-include-hidden-files-and-hidden-directories-and-their-con
-  echo "$user:x:$base_gid:$user" >> /etc/group
-  # adding the user to their default group with the same name as the username
-} 
+}
 
 make_passwd() {
   echo "$user:$password" | chpasswd
@@ -104,7 +111,12 @@ while getopts ":g:s:u:" opt; do
       # sets the user based on the user input
       ;;
     s)
-      shell=/bin/${OPTARG}
+      if [[ grep ${OPTARG} /etc/shells ]]; then
+        shell=/bin/${OPTARG}
+      else
+        echo "Error: That is not a valid shell"
+        exit 2
+      fi
       # sets the desired shell based on user unput
       ;;
 
@@ -142,12 +154,16 @@ fi
 
 user_exists
 check_uid
-echo "Creating the user $user with UID $base_uid"
+echo "Creating the user $user with UID $base_uid..."
 add_user
+echo "Creating the home directory..."i
+make_directory
+copy_skel
 
 if [[ -n $group_add ]]; then
   add_group
-  echo "Adding the new user to the specified groups"
+  echo "Adding the new user to the specified groups..."
 fi
 
 passwd $user
+echo "User creation is complete!"
