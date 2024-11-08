@@ -6,7 +6,7 @@
 * Sudo access
 
 
-### Script 1: configuration_script_main
+### Project 1: configuration_script_main
 This script is for the setup of a new system by automatically installing selected packages and organizing configuration files. It installs the packages specified by the user in the *packages* text file and creates symbolic links to the cloned directory. **This script requires you to run it as the root user or using sudo.**
 <br>
 
@@ -29,7 +29,7 @@ This script is for the setup of a new system by automatically installing selecte
 
 ---
 
-### Script 2: configuration_script_new_user
+### Project 2: configuration_script_new_user
 This script creates a new user on a computer and allows you to customize the username, shell, add the new user to existing groups, sets a password, and automatically sets up a home directory. It copies default configuration files from `/etc/skel` into the new home directory and assigns the new user to a primary group that matches their username. **This script requires you to run it as the root user or using sudo.**
 
 ###### NOTE: A user name must always be provided with the "-u" option to run this script
