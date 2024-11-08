@@ -20,7 +20,7 @@ base_uid=1000
 group_add=""
 
 user_exists() { 
-    if grep -q "^$1:" /etc/passwd; then
+    if grep -q "^$user:" /etc/passwd; then
       # checks if the username given as a argument exists in the /etc/passwd file
         echo "Error: That user already exists"
         exit 3 # Exit because user already exists
@@ -31,7 +31,7 @@ check_uid() {
   while [[ $new_user -eq 0 ]]; do
     if grep -q ":$base_uid:" /etc/passwd || grep -q -e ":$base_uid:" /etc/group; then
       # checks if base_uid is already used in /etc/passwd or if a group is already using the desired ID
-      base_uid=$(( base_uid + 1 ))i
+      base_uid=$(( base_uid + 1 ))
       # if the uid is already used then add 1 to the uid and try again to check
     else
       base_gid=$base_uid 
@@ -93,8 +93,10 @@ add_group() {
       # adds user to the end of the line but adds a comma if a user is already in the group
       # creates a modified new line adding the new user to the group
     fi
-    sed -i "s|$group_line|$modified_group|g" /etc/group
+    sed -i "s|$group_line|$modified_group|" /etc/group
     # sed replaces the old text saved in $group_line with the new text saved in $modified_group
+    # the s tells sed to replace text within the specified pattern
+    # -i means to modify the file in place. making changes directly to the file
     # source: https://askubuntu.com/questions/20414/find-and-replace-text-within-a-file-using-commands
     # source: https://man.archlinux.org/man/sed.1
   done
@@ -108,7 +110,7 @@ while getopts ":g:s:u:" opt; do
       # sets the user variable based on the argument given
       ;;
     s)
-      if [[ grep ${OPTARG} /etc/shells ]]; then
+      if grep ${OPTARG} /etc/shells; then
         shell=/bin/${OPTARG}
       else
         echo "Error: That is not a valid shell"
@@ -153,6 +155,7 @@ if [[ -z $user ]]; then
 fi 
 # checks that the script was given a -u with a username arguement. required to run the script
 
+
 user_exists
 check_uid
 echo "Creating the user $user with UID $base_uid..."
@@ -170,4 +173,11 @@ fi
 
 passwd $user
 # creates the password for the user 
-echo "User creation is complete!"
+if [[ $? -eq 0 ]]; then
+  echo "User creation is complete!"
+  exit 0
+else
+  echo "Error: The password has not been properly set for the user. Please use \"passwd $user\" to set the password manually"
+  exit 3
+fi
+
