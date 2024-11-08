@@ -1,0 +1,17 @@
+
+#!/bin/bash
+
+user=$1
+# saving the argument passed into the script as a variable user_home for the user's name
+
+if [[ -f "/home/$user/.bashrc" ]]; then
+  # checks if the .bashrc file already exists using -f
+  rm /home/$user/.bashrc
+  # removes the ./bashrc file if it already exists because we're going to create a link
+fi
+
+ln -s "/home/$user/2420-as2-starting-files/bin" "/home/$user/bin"
+ln -s "/home/$user/2420-as2-starting-files/config" "/home/$user/.config"
+ln -s "/home/$user/2420-as2-starting-files/home/bashrc" "/home/$user/.bashrc"
+
+# creating symbolic links to the cloned configuration files from the bin directory, .config directory, and .bashrc file locations on the PC of the user

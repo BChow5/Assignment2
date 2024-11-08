@@ -1,0 +1,11 @@
+#!/bin/bash
+
+pacman -Syu
+# used to update the system. S is sync, y refreshes the package database, and u is to upgrade all the installed packages on the system.
+
+for package in "$@"; do
+  pacman -S --noconfirm "$package"
+done 
+# loops through the name of packages sent as an array into this script and installs them with pacman
+# pacman uses --noconfirm to bypass any messages since we're running it from a script
+# source: https://man.archlinux.org/man/pacman.8

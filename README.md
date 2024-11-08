@@ -2,7 +2,7 @@
 
 ### Prerequisites
 * Bash
-* A clone of the directory files
+* A clone of the directory files saved in the user's home directory
 * Sudo access
 
 
@@ -45,7 +45,7 @@ This script creates a new user on a computer and allows you to customize the use
 <br>
 
 **How to Add the New User to Existing Groups During Creation** <br>
-* Use the "-s" option and provide the chosen shell.
+* Use the "-g" option and provide the chosen shell.
 * *e.g. "sudo ./configuration_script_new_user -u username -g "group1 group2 group3" "*
 <br>
 
@@ -53,3 +53,8 @@ This script creates a new user on a computer and allows you to customize the use
 
 ### Configuration
 * package - customize this file to specify which packages should be installed
+
+### Troubleshooting
+* exit 1 - Indicates an error because of how the script was called. Either it was not called with sudo or no options were given to the script
+* exit 2 - Indicates an error because the option given to the script did not receive a required argument or an invalid option was given.
+* exit 3 - Indicates an error because a user who already exists was provided or a group that doesn't exist was provided to the configuration_script_new_user script.

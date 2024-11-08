@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [[ $EUID -ne 0 ]]; then
-  echo "Please run as a root user or using sudo"
+  echo "Error: Please run as a root user or using sudo"
   exit 1
 fi
 # checks if script is being run with sudo or as root user. exit if not.
 
 if [ $# -eq 0 ]; then
-    echo "No options or arguments provided. You need to at least provide a username using -u"
+    echo "Error: No options or arguments provided. You need to at least provide a username using -u"
     exit 1
 fi
 # checks if script is given no arguments or options 
@@ -20,23 +20,24 @@ base_uid=1000
 group_add=""
 
 user_exists() { 
-    if grep -q -e "^$1:" /etc/passwd; then
+    if grep -q "^$1:" /etc/passwd; then
       # checks if the username given as a argument exists in the /etc/passwd file
-        echo "That user already exists"
+        echo "Error: That user already exists"
         exit 3 # Exit because user already exists
     fi
 }
 
 check_uid() {
   while [[ $new_user -eq 0 ]]; do
-    if grep -q -e ":$base_uid:" /etc/passwd || grep -q -e ":$base_uid:" /etc/group; then
+    if grep -q ":$base_uid:" /etc/passwd || grep -q -e ":$base_uid:" /etc/group; then
       # checks if base_uid is already used in /etc/passwd or if a group is already using the desired ID
-      base_uid=$(( base_uid + 1 ))
-      # if it is there, then add 1 to the uid and try again to check
+      base_uid=$(( base_uid + 1 ))i
+      # if the uid is already used then add 1 to the uid and try again to check
     else
       base_gid=$base_uid 
+      # makes the group id match the user id if it isn't being used yet
       new_user=1
-      # sets to 1 to exit out of the loop after
+      # sets new_user to 1 to exit out of the loop after we save the variable base_gid
     fi
     # checks in /etc/passwd if the UID already exists in the file
     # if UID already exists, then increment UID by 1 and check again
@@ -51,36 +52,32 @@ add_user() {
   # appends the new user information into the /etc/passwd file
   # source: https://stackoverflow.com/questions/7859281/how-to-add-user-with-out-using-useradd-or-similar-command
   echo "$user:x:$base_gid:$user" >> /etc/group
-  # adding the user to their default group with the same name as the username
+  # creating a group for with the same name as the username and saving that to the /etc/group file 
 }
 
 make_directory() {
   mkdir /home/$user
   # creates the home directory of the new user
-  chown -R "$user:" "$home_dir"
-  # changing ownership of the home directory to the new user created 
+  chown -R "$user" "$home_dir"
+  # recursively changing ownership of the home directory to the new user created 
 }
 
 copy_skel() {
 
-  cp -pr /etc/skel /home/$user
+  cp -r /etc/skel /home/$user
+  # recursively copy the files from /etc/skel to the home directory of the user
   # source: https://man.archlinux.org/man/cp.1
   # source: https://superuser.com/questions/61611/how-to-copy-with-cp-to-include-hidden-files-and-hidden-directories-and-their-con
 }
 
-make_passwd() {
-  echo "$user:$password" | chpasswd
 
-i  # source: https://stackoverflow.com/questions/2150882/how-to-automatically-add-user-account-and-password-with-a-bash-script
-  # source: https://man.archlinux.org/man/chpasswd.8
-}
 
 add_group() {
 
   for group in ${group_add[@]}; do 
     if ! grep -q $group /etc/group; then
       # checks that the desired group name actually exists already
-      echo "This group does not exist"
+      echo "Error: This group does not exist"
       exit 3
     fi
 
@@ -97,7 +94,7 @@ add_group() {
       # creates a modified new line adding the new user to the group
     fi
     sed -i "s|$group_line|$modified_group|g" /etc/group
-    # replaces the old text saved in $group_line with the new text saved in $modified_group
+    # sed replaces the old text saved in $group_line with the new text saved in $modified_group
     # source: https://askubuntu.com/questions/20414/find-and-replace-text-within-a-file-using-commands
     # source: https://man.archlinux.org/man/sed.1
   done
@@ -108,7 +105,7 @@ while getopts ":g:s:u:" opt; do
   case "${opt}" in
     u)
       user=${OPTARG}
-      # sets the user based on the user input
+      # sets the user variable based on the argument given
       ;;
     s)
       if [[ grep ${OPTARG} /etc/shells ]]; then
@@ -117,12 +114,15 @@ while getopts ":g:s:u:" opt; do
         echo "Error: That is not a valid shell"
         exit 2
       fi
-      # sets the desired shell based on user unput
+      # saves the desired shell to the shell variable based on user argument
       ;;
 
     g) 
       read -a group_add <<< ${OPTARG}
-      # gets a string of the group to add user to and save it to an array group_add
+      # gets a string of the groups from the argument to add the user to and save it to an array called group_add
+      # splits it into an array based on spaces and assigns each group to group_add array.
+      # <<< takes the string from the OPTARG on the right side and passes it as standard input to the read
+      # https://man.archlinux.org/man/read.ni
       ;;
     :)
       if [[ "${OPTARG}" == "u" ]]; then  
@@ -135,35 +135,39 @@ while getopts ":g:s:u:" opt; do
         echo "Error: -${OPTARG} requires at least one group to add the user to"
         exit 2
       fi
-      # error for when a user puts an option but has no argument with it when it needs one
+      # errors for when a user puts an option but has no argument with it when it needs one
       ;;
     *)
       echo "Error: Please enter a valid option"
       exit 2
 
-      # error for when a user give an option other than -d or -u
+      # error for when a user give an option other than -s , -g, or -u
   esac
 done
 
 # MAIN PART OF THE CODE TO CREATE USER
 
 if [[ -z $user ]]; then
-  echo "No username was provided with -u. Please provide a username"
+  echo "Error: No username was provided with -u. Please provide a username"
   exit 1
 fi 
+# checks that the script was given a -u with a username arguement. required to run the script
 
 user_exists
 check_uid
 echo "Creating the user $user with UID $base_uid..."
 add_user
-echo "Creating the home directory..."i
+echo "Creating the home directory..."
 make_directory
 copy_skel
 
 if [[ -n $group_add ]]; then
+  # checks if any groups to add the user to was given
   add_group
   echo "Adding the new user to the specified groups..."
 fi
 
+
 passwd $user
+# creates the password for the user 
 echo "User creation is complete!"

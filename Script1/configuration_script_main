@@ -7,7 +7,6 @@ if [[ $EUID -ne 0 ]]; then
 fi
 # this checks if the script is being run by the root user or using sudo
 # EUID is the Effective User ID and it can be used if the user is executing with root privileges
-# the script outputs the message to the standard error stream using 1>&2 if not a super user
 # source: https://www.baeldung.com/linux/check-script-run-root#:~:text=root%20Check%20With%20the%20id%20Command&text=To%20do%20that%2C%20it%20uses,not%20the%20real%20user%20ID.
 
 if [[ $# -eq 0 ]]; then 
@@ -16,12 +15,11 @@ if [[ $# -eq 0 ]]; then
 fi
 # checks if any arguments or options are being passed into the script when called and exits if none
 
-while getopts ":cp:" opt; do
+while getopts ":c:p:" opt; do
   case "${opt}" in 
     p)
       packages=$(<${OPTARG})
       # saves the contents of the file provided by the user argument into the variable packages using command substitution
-      # echo ${packages[@]}
       # source: https://stackoverflow.com/questions/14116748/need-to-assign-the-contents-of-a-text-file-to-a-variable-in-a-bash-script
       bash configuration_script_packages ${packages}
       # calls on our other script to handle the package installation with the user created package array
@@ -32,9 +30,17 @@ while getopts ":cp:" opt; do
 
     c)
       user_home=${OPTARG}
-      # source: https://stackoverflow.com/questions/7358611/get-users-home-directory-when-they-run-a-script-as-root
-      bash configuration_script_config ${user_home}
-      # calls the script to create symbolic links for the configuration files based to the cloned configuration directory
+      # user provides an argument with the desired username and this saves it into a variable user_home to pass into the script
+      if grep -q "^$user_home:" /etc/passwd; then
+        # grep -q does the pattern matching quietly and doesn'nt print anything out but can still return if it found a match
+        # checks that the user provided is a real user by looking at the /etc/passwd file
+        bash configuration_script_config ${user_home}
+      # calls the script to create symbolic links for the configuration files based to the cloned configuration directory for the user provided by the argument
+        exit 0
+      else
+        echo "Error: The provided user is not a valid user"
+        exit 2
+      fi
       ;;
 
     :)
@@ -43,10 +49,14 @@ while getopts ":cp:" opt; do
         exit 2
       fi
       # error for when a user puts in the option -p but has no argument with it
-      
+      if [[ ${OPTARG} == "c" ]]; then 
+        echo "Error: -${OPTARG} requires a desired user to create the symbolic links"
+        exit 2
+      fi
+      # error if they gave the option -c but didnt provide a user in the argument
       ;;
     *)
-      echo "Error: Please enter a valid option"
+      echo "Error: Please enter a valid option -p or -c"
       exit 2
       # error for when a user give an option other than -p or -c
       ;;
