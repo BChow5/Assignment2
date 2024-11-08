@@ -23,6 +23,7 @@ This script is for the setup of a new system by automatically installing selecte
 **How to Set Custom Packages to Download:**
 * Edit the text in the *packages* file to specify which packages you want downloded onto the system automatically. Separate each package on it's own new line.
 <br>
+
 ###### NOTE: There are already default packages listed in the file for download
 <br>
 
