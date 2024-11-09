@@ -41,12 +41,12 @@ This script creates a new user on a computer and allows you to customize the use
 <br>
 
 **How to Choose a Customer Shell for the User** <br>
-* Use the "-s" option and provide the chosen shell.
-* *e.g. "sudo ./configuration_script_new_user -u username -s bash"*
+* Use the "-s" option and provide the full chosen shell.
+* *e.g. "sudo ./configuration_script_new_user -u username -s /bin/bash"* 
 <br>
 
 **How to Add the New User to Existing Groups During Creation** <br>
-* Use the "-g" option and provide the chosen shell.
+* Use the "-g" option and provide the chosen shell. Provide your groups in the format "group1 group2 group3".
 * *e.g. "sudo ./configuration_script_new_user -u username -g "group1 group2 group3" "*
 <br>
 
@@ -58,4 +58,4 @@ This script creates a new user on a computer and allows you to customize the use
 ### Troubleshooting
 * exit 1 - Indicates an error because of how the script was called. Either it was not called with sudo or no options were given to the script
 * exit 2 - Indicates an error because the option given to the script did not receive a required argument or an invalid option was given.
-* exit 3 - Indicates an error because a user who already exists was provided or a group that doesn't exist was provided to the configuration_script_new_user script.
+* exit 3 - Indicates an error because a user who already exists was provided or a group that doesn't exist was provided or the password creation failed.

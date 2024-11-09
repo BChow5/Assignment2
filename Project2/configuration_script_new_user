@@ -29,7 +29,7 @@ user_exists() {
 
 check_uid() {
   while [[ $new_user -eq 0 ]]; do
-    if grep -q ":$base_uid:" /etc/passwd || grep -q -e ":$base_uid:" /etc/group; then
+    if grep -q ":$base_uid:" /etc/passwd || grep -q ":$base_uid:" /etc/group; then
       # checks if base_uid is already used in /etc/passwd or if a group is already using the desired ID
       base_uid=$(( base_uid + 1 ))
       # if the uid is already used then add 1 to the uid and try again to check
@@ -49,26 +49,23 @@ check_uid() {
 add_user() {
   home_dir="/home/$user"
   echo "$user:x:$base_uid:$base_gid:$user:$home_dir:$shell" >> /etc/passwd
-  # appends the new user information into the /etc/passwd file
+  # >> appends the new user information into the /etc/passwd file
   # source: https://stackoverflow.com/questions/7859281/how-to-add-user-with-out-using-useradd-or-similar-command
   echo "$user:x:$base_gid:$user" >> /etc/group
-  # creating a group for with the same name as the username and saving that to the /etc/group file 
+  # >> appends a new group with the same name as the username and saving that to the /etc/group file 
 }
 
 make_directory() {
   mkdir /home/$user
   # creates the home directory of the new user
+  cp -r /etc/skel /home/$user
+  # recursively copy the files from /etc/skel to the home directory of the user
+  # source: https://superuser.com/questions/61611/how-to-copy-with-cp-to-include-hidden-files-and-hidden-directories-and-their-con
+  # source: https://man.archlinux.org/man/cp.1
   chown -R "$user" "$home_dir"
   # recursively changing ownership of the home directory to the new user created 
 }
 
-copy_skel() {
-
-  cp -r /etc/skel /home/$user
-  # recursively copy the files from /etc/skel to the home directory of the user
-  # source: https://man.archlinux.org/man/cp.1
-  # source: https://superuser.com/questions/61611/how-to-copy-with-cp-to-include-hidden-files-and-hidden-directories-and-their-con
-}
 
 
 
@@ -110,8 +107,9 @@ while getopts ":g:s:u:" opt; do
       # sets the user variable based on the argument given
       ;;
     s)
-      if grep ${OPTARG} /etc/shells; then
-        shell=/bin/${OPTARG}
+      if grep -q -x ${OPTARG} /etc/shells; then
+        # checks if the shell provided is a valid shell in the /etc/shells file
+        shell=${OPTARG}
       else
         echo "Error: That is not a valid shell"
         exit 2
@@ -162,7 +160,6 @@ echo "Creating the user $user with UID $base_uid..."
 add_user
 echo "Creating the home directory..."
 make_directory
-copy_skel
 
 if [[ -n $group_add ]]; then
   # checks if any groups to add the user to was given
@@ -174,10 +171,11 @@ fi
 passwd $user
 # creates the password for the user 
 if [[ $? -eq 0 ]]; then
+  # checks the exit code of the password command. echo a completion or failure message based on if exit code is 0 or something else
   echo "User creation is complete!"
   exit 0
 else
-  echo "Error: The password has not been properly set for the user. Please use \"passwd $user\" to set the password manually"
+  echo "Error: The user was created but password has not been properly set for the user. Please use \"passwd $user\" to set the password manually"
   exit 3
 fi
 
